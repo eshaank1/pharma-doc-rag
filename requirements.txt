@@ -1,0 +1,14 @@
+gradio
+gradio_pdf
+pypdf
+PyPDF2
+pymupdf
+sentence-transformers
+faiss-cpu
+numpy
+pandas
+pytesseract
+pillow
+opencv-python-headless
+llama-index-core
+requests
