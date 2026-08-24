@@ -1,0 +1,11 @@
+{
+  "fixture": "borderless_table.pdf",
+  "cases": [
+    {
+      "question": "What material is the Lid Film made of?",
+      "expected_facts": ["Tyvek"],
+      "expected_doc_type": "Packaging Specification",
+      "expected_pages": [0, 0]
+    }
+  ]
+}

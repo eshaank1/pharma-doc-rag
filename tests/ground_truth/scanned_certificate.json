@@ -1,0 +1,11 @@
+{
+  "fixture": "scanned_certificate.pdf",
+  "cases": [
+    {
+      "question": "What is the lot number on this certificate?",
+      "expected_facts": ["2001"],
+      "expected_doc_type": "Certificate Of Quality",
+      "expected_pages": [0, 0]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "fixture": "scanned_bse_tse.pdf",
+  "cases": [
+    {
+      "question": "Does this product contain animal-origin materials?",
+      "expected_facts": ["not contain", "animal"],
+      "expected_doc_type": "BSE/TSE Declaration",
+      "expected_pages": [0, 0]
+    }
+  ]
+}

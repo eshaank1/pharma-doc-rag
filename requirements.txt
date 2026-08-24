@@ -12,3 +12,4 @@ pillow
 opencv-python-headless
 llama-index-core
 requests
+pytest

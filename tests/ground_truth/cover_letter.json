@@ -1,0 +1,11 @@
+{
+  "fixture": "cover_letter.pdf",
+  "cases": [
+    {
+      "question": "Who signed this letter?",
+      "expected_facts": ["Jane Doe"],
+      "expected_doc_type": "Cover Letter",
+      "expected_pages": [0, 0]
+    }
+  ]
+}

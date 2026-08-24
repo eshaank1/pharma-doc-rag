@@ -1,0 +1,65 @@
+{
+  "fixture": "pharma_blob_sample.pdf",
+  "cases": [
+    {
+      "question": "What temperature should AKTA ready flow kits be stored above?",
+      "expected_facts": ["+5"],
+      "expected_doc_type": "Cover Letter",
+      "expected_pages": [0, 0]
+    },
+    {
+      "question": "What is the lot number for the AKTA ready Low Flow Kit certificate of quality?",
+      "expected_facts": ["18356721"],
+      "expected_doc_type": "Certificate Of Quality",
+      "expected_pages": [1, 1]
+    },
+    {
+      "question": "What is the expiration date on the certificate of quality for lot 15102934?",
+      "expected_facts": ["20210712"],
+      "expected_doc_type": "Certificate Of Quality",
+      "expected_pages": [2, 2]
+    },
+    {
+      "question": "What material is the Lid Film made of in the packaging specification?",
+      "expected_facts": ["Tyvek"],
+      "expected_doc_type": "Packaging Specification",
+      "expected_pages": [3, 4]
+    },
+    {
+      "question": "What packaging material change was made under ECN-2023-0847?",
+      "expected_facts": ["PVC", "PETG"],
+      "expected_doc_type": "Packaging Specification",
+      "expected_pages": [3, 4]
+    },
+    {
+      "question": "Does this product contain any materials of animal origin?",
+      "expected_facts": ["not contain", "animal"],
+      "expected_doc_type": "BSE/TSE Declaration",
+      "expected_pages": [5, 5]
+    },
+    {
+      "question": "What sterilization method was used for the tubing?",
+      "expected_facts": ["Autoclave", "tubing"],
+      "expected_doc_type": "Material Description",
+      "expected_pages": [6, 6]
+    },
+    {
+      "question": "What sterilization method was used for the fittings?",
+      "expected_facts": ["Gamma", "fittings"],
+      "expected_doc_type": "Material Description",
+      "expected_pages": [6, 6]
+    },
+    {
+      "question": "What is the supplier qualification status for Cytiva Sweden AB?",
+      "expected_facts": ["Approved"],
+      "expected_doc_type": "Supplier Qualification",
+      "expected_pages": [7, 8]
+    },
+    {
+      "question": "Where is the final assembly manufactured before being shipped to the distribution center?",
+      "expected_facts": ["Eysins"],
+      "expected_doc_type": "Chain Of Custody",
+      "expected_pages": [9, 9]
+    }
+  ]
+}

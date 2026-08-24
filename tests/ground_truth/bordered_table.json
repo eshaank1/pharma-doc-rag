@@ -1,0 +1,11 @@
+{
+  "fixture": "bordered_table.pdf",
+  "cases": [
+    {
+      "question": "What is the expiration date for LOT-1002?",
+      "expected_facts": ["2027-02-10"],
+      "expected_doc_type": "Certificate Of Quality",
+      "expected_pages": [0, 0]
+    }
+  ]
+}
