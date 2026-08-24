@@ -105,4 +105,13 @@ pharma_rag/
   answer_generation.py           # source-attributed answer generation
   document_store.py              # EnhancedDocumentStore: ties the pipeline together
   ui.py                          # Gradio Blocks interface, theme, and CSS
+tests/
+  run_eval.py                    # evaluation harness: runs the real pipeline against fixtures
+  generate_fixtures.py           # (re)generates tests/fixtures/ and tests/ground_truth/
+  eval_lib/
+    metrics.py                   # answer matching, recall, and scoring logic
+    report.py                    # aggregates per-case results into the summary table
+  fixtures/                      # synthetic pharma PDFs (digital + scanned) used as test input
+  ground_truth/                  # expected facts/doc type/pages per fixture, as JSON
+  results/                       # timestamped JSON output from eval runs (gitignored)
 ```
