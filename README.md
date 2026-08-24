@@ -49,7 +49,7 @@ Environment variables (all optional, see `pharma_rag/config.py`):
 | `OLLAMA_MODEL` | `mistral` | Model to use for classification, routing, and answer generation |
 | `EMBED_MODEL_NAME` | `all-MiniLM-L6-v2` | Sentence-transformers embedding model |
 
-## Testing & evaluation
+## Testing & Evaluation
 
 Correctness here isn't just "does it run" -- for a pharma document pipeline, the questions that matter are "did it retrieve the right document" and "did the answer actually contain the right fact." This repo has two layers of testing:
 
@@ -86,7 +86,7 @@ This makes real LLM calls against every fixture, so a full run takes several min
 
 `tests/fixtures/` and `tests/ground_truth/` are already committed, so `tests/generate_fixtures.py` normally doesn't need to be re-run -- it exists so the fixtures can be regenerated or audited if their content ever needs to change.
 
-## Project layout
+## Project Layout
 
 ```
 start.sh                         # starts Ollama (if needed) and the app
@@ -145,24 +145,3 @@ flowchart TD
 9. **Retrieval** — the top-`k` (default `k=4`) nearest chunks are retrieved by L2 distance and converted to a 0–1 relevance score (`max(0, 1 - distance/2)`).
 10. **Answer generation** — retrieved chunks are grouped by source document, de-duplicated line-by-line to avoid double-counting content repeated across overlapping chunks, and sent to the Ollama LLM (temperature 0.1) in one prompt that must cite document type and page range.
 11. **UI** — a Gradio `Blocks` app (`ui.py`) displays the detected document structure, lets the user filter by doc type or toggle auto-routing, and renders chat answers with per-source relevance and previews.
-
-### Architecture Table
-
-| Component | Choice Used | Notes/Rationale |
-|---|---|---|
-| PDF parsing | `pymupdf` (fitz) | Used for both text extraction and page rasterization (for the OCR fallback path) |
-| Table-aware extraction | Custom heuristic: word y-position line clustering + gap-based column splitting (`pdf_processing.py`) | PyMuPDF's own `find_tables()` merged an entire prose test page into a false-positive table; this heuristic produced zero false positives against a Cover-Letter-style page |
-| OCR engine | Tesseract via `pytesseract` | Only invoked when native text extraction returns nothing for a page |
-| Scanned-page preprocessing | OpenCV: denoise → deskew → CLAHE → Otsu binarize, at 2x render zoom | Code comments call 2x zoom "the single biggest lever for OCR accuracy before any other preprocessing even runs" |
-| OCR confidence gating | `MIN_OCR_CONFIDENCE = 60` (mean Tesseract word confidence, 0–100) | Pages below this are flagged as unreliable in logs rather than trusted silently |
-| Document classification | Ordered regex heuristics (`TITLE_PATTERNS`) first, Ollama LLM fallback | Deterministic and fast for the common case; LLM only called when no header pattern matches |
-| Boundary detection | Continuation-marker + known-header heuristics, LLM fallback (`detect_document_boundary`) | LLM is only invoked when neither heuristic can resolve the page |
-| Chunking strategy | Custom line-based sliding window, `chunk_size=100` words, `overlap=20` words (`chunking.py`) | Chunks whole lines, not `split()`'d/rejoined words, so a table row's cells never split across a chunk boundary; a LlamaIndex `SentenceSplitter` path (`chunk_with_llama_index`) exists but isn't used by default |
-| Embedding model | `sentence-transformers`, `all-MiniLM-L6-v2` (env `EMBED_MODEL_NAME`) | Shared by the retriever and the (unused-by-default) LlamaIndex chunking path |
-| Vector store | FAISS `IndexFlatL2`, one global + one per document type | Exact brute-force search, no ANN index — appropriate at this document/chunk scale |
-| Query routing | Ollama LLM predicts doc type + confidence, JSON-parsed (`predict_query_document_type`) | Routes to the type-specific index only when confidence > 0.7, else searches the global index |
-| Retrieval | Top-k similarity search, default `k=4` (configurable via UI slider) | `-1` padding FAISS returns for under-filled doc-type indices is explicitly filtered before use |
-| LLM serving | Ollama, default model `mistral` (env `OLLAMA_MODEL`, `OLLAMA_HOST`) | Runs fully locally, replacing the original Colab prototype's CUDA-only `bitsandbytes` 4-bit Mistral-7B setup |
-| LLM context window | `OLLAMA_NUM_CTX = 16384` (env-overridable) | Raised from Ollama's ~4096-token default, which silently truncated multi-document summarization prompts instead of erroring |
-| Answer generation | Single Ollama prompt, source-attributed, temperature 0.1 | Retrieved chunks are grouped by document and line-deduplicated before being sent as context |
-| UI | Gradio `Blocks`, custom theme/CSS (`ui.py`) | Shows document structure, doc-type filter, auto-route toggle, and per-source relevance/preview |
