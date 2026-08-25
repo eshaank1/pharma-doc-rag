@@ -14,4 +14,4 @@ if __name__ == "__main__":
     llm_self_test()
 
     demo = create_interface()
-    demo.launch(theme=LAB_THEME, css=COMPACT_CSS, server_name="0.0.0.0")
+    demo.launch(theme=LAB_THEME, css=COMPACT_CSS, server_name="127.0.0.1")
