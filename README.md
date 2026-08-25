@@ -3,27 +3,55 @@ RAG pipeline that splits multi-document pharmaceutical PDFs into logical section
 
 ## Setup
 
-Requires **Python 3.10+** (`llama-index-core`'s dependencies use syntax that doesn't run on 3.9).
+Ollama (the LLM server) always runs directly on your machine — install it natively even if you use Docker for the rest of the app, since it's the piece that talks to your GPU. Pick your OS:
 
-1. **Install Ollama** and pull a model:
-   ```bash
-   brew install ollama
-   ollama serve                 # run this in a separate terminal, keep it running
-   ollama pull mistral          # or: ollama pull qwen2.5:7b-instruct
-   ```
-   Set `OLLAMA_MODEL` (env var) if you pull a different model than `mistral`.
+**macOS**
+```bash
+brew install ollama
+```
+(or download the installer from [ollama.com/download](https://ollama.com/download))
 
-2. **Install Tesseract OCR** (needed for scanned/image-only PDF pages):
-   ```bash
-   brew install tesseract
-   ```
+**Linux**
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+```
 
-3. **Create a virtualenv and install Python dependencies:**
-   ```bash
-   python3.10 -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
+**Windows**
+
+Download and run `OllamaSetup.exe` from [ollama.com/download](https://ollama.com/download).
+
+Then, on any OS, start the server and keep it running:
+```bash
+ollama serve                 # run this in a separate terminal, keep it running
+```
+The app pulls the model it needs automatically on first run (see `ensure_model_pulled()` in `pharma_rag/llm.py`) — you don't need to `ollama pull` manually. Set the `OLLAMA_MODEL` env var if you want a model other than the default `mistral` (e.g. `qwen2.5:7b-instruct`).
+
+With Ollama running, choose one of the following ways to run the app itself:
+
+### Option A: Docker (recommended for trying it out)
+
+Requires [Docker](https://www.docker.com/products/docker-desktop/). This handles Python, Tesseract OCR, and all other app dependencies for you.
+
+```bash
+docker compose up --build
+```
+Launches the app at **http://localhost:7860**, connecting out to the Ollama server running on your host machine. Upload a pharmaceutical PDF and start asking questions.
+
+Stop it with `Ctrl+C` (or `docker compose down`).
+
+### Option B: Local Python venv (for development)
+
+Requires **Python 3.10+** (`llama-index-core`'s dependencies use syntax that doesn't run on 3.9) and Tesseract OCR:
+```bash
+brew install tesseract        # macOS; see Tesseract docs for Linux/Windows
+```
+
+Create a virtualenv and install Python dependencies:
+```bash
+python3.10 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
 ## Running it
 
@@ -37,7 +65,7 @@ Starts Ollama (if it isn't already running) and launches the app at **http://127
 ```
 Stops both the app and Ollama.
 
-(A Docker-based setup for distributing this to others is planned but not included yet.)
+(`start.sh`/`stop.sh` are for the venv workflow above; with Docker, use `docker compose up`/`down` instead, and manage the native Ollama process yourself.)
 
 ## Configuration
 
