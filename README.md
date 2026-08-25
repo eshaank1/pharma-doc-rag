@@ -99,7 +99,7 @@ pharma_rag/
   document_intelligence.py       # heuristic + LLM document classification and boundary detection
   pdf_processing.py              # PDF text extraction, OCR pipeline, text cleaning
   chunking.py                    # sliding-window and LlamaIndex-based chunking
-  retrieval.py                   # embeddings, FAISS indices, query routing
+  retrieval.py                   # embeddings, FAISS vector indexes, query routing
   answer_generation.py           # source-attributed answer generation
   document_store.py              # EnhancedDocumentStore: ties the pipeline together
   ui.py                          # Gradio Blocks interface, theme, and CSS
@@ -127,7 +127,7 @@ flowchart TD
     F --> G["Logical document assembly\n(boilerplate stripped)"]
     G --> H["Chunking: line-based sliding window\n(100 words, 20-word overlap)"]
     H --> I["Embedding: sentence-transformers\n(all-MiniLM-L6-v2)"]
-    I --> J["FAISS indices:\nglobal + per document type"]
+    I --> J["FAISS vector indexes:\nglobal + per document type"]
     J --> K["Query routing: LLM predicts\ndoc type + confidence"]
     K --> L["Retrieval: top-k similarity search"]
     L --> M["Answer generation: Ollama LLM,\nsource-attributed, line-deduped"]
