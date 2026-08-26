@@ -93,14 +93,9 @@ class IntelligentRetriever:
         query_embedding = embed_model.encode([query])
 
         def _valid_hits(D, I):
-            # FAISS pads missing results with index -1 whenever an index
-            # has fewer than k vectors (very common for a doc-type-specific
-            # index on a short document). Without this filter, Python's
-            # negative indexing silently turns mapping[-1] / chunks[-1]
-            # into "last item" instead of "no match", duplicating the
-            # last chunk into an extra retrieval slot -- padding the LLM's
-            # context with repeated content instead of surfacing whatever
-            # else was actually relevant.
+            # FAISS pads short results with index -1; without filtering,
+            # Python's negative indexing would turn that into "last item"
+            # instead of "no match", duplicating a chunk into the results.
             return [(i, d) for i, d in zip(I[0], D[0]) if i != -1]
 
         if filter_doc_type and filter_doc_type in self.doc_type_indices:

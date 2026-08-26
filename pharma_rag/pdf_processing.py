@@ -12,32 +12,17 @@ from .config import MIN_OCR_CONFIDENCE, MIN_TEXT_LENGTH
 from .document_intelligence import classify_document_type, detect_document_boundary
 from .schemas import LogicalDocument, PageInfo
 
-# ------------------------------------------------------------------
 # Table-aware text extraction.
 #
-# page.get_text() puts each table CELL on its own line rather than each
-# ROW -- nothing marks where one row ends and the next begins. Downstream,
-# the (now-fixed) chunker used to flatten all whitespace/newlines and
-# rejoin with single spaces, so cells from different rows became
-# indistinguishable from each other ("LOT-1002 2025-02-10 2027-02-10
-# LOT-1003 2025-03-05" reads as one run of words with no row markers).
-# That's what let adjacent rows get pulled together across a chunk
-# boundary, with no way to tell which date belonged to which lot.
-#
-# Fix: reconstruct each row as ONE line, with cells joined by " | ", for
-# BOTH ruled tables (visible borders) and borderless tables (columns
-# only implied by whitespace alignment) -- using the same heuristic for
-# both, since it works for both: cluster words on a page into visual
-# lines by y-position, split each line into "columns" wherever the
-# horizontal gap between words is unusually wide (far beyond normal
-# inter-word spacing), then look for a run of >=3 consecutive lines with
-# the same column count. Genuine prose essentially never produces that
-# pattern consistently across several lines (verified empirically against
-# a Cover-Letter-style page: zero false positives), which is what a
-# strategy based on PyMuPDF's own bordered/borderless find_tables()
-# heuristics could not guarantee -- its text-position strategy merged an
-# entire test page (including headings) into one bogus table.
-# ------------------------------------------------------------------
+# page.get_text() puts each table cell on its own line with no row
+# markers, so cells from different rows can blur together downstream.
+# Fix: reconstruct each row as one line ("cell | cell | ...") by
+# clustering words into visual lines by y-position, splitting into
+# columns on unusually wide horizontal gaps, and requiring >=3
+# consecutive same-column-count lines to call it a table (works for
+# both ruled and borderless tables; more reliable in testing than
+# PyMuPDF's own find_tables(), which merged a whole non-table page
+# into one bogus table).
 
 _TABLE_GAP_THRESHOLD = 18.0   # points; well beyond a normal inter-word gap
 _TABLE_Y_TOLERANCE = 3.0      # points; words within this are "the same line"
@@ -172,12 +157,8 @@ def clean_extracted_text(text: str) -> str:
             return False
         if ch == "�":
             return True
-        # NOTE: do not use str.isprintable() here -- it returns False for
-        # '\t' itself, which would strip tabs before the whitespace-
-        # collapsing regex below ever saw them (collapsing e.g.
-        # "Lot\t\tNumber" straight into "LotNumber" with no space at all).
-        # Checking the Unicode category directly avoids that trap while
-        # still stripping real control/format junk like form feeds.
+        # Not str.isprintable() -- it flags '\t' too, stripping tabs before
+        # the whitespace-collapsing regex below can turn them into spaces.
         return unicodedata.category(ch).startswith("C")
 
     text = "".join(ch for ch in text if not _is_junk_char(ch))

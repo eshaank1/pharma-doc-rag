@@ -4,13 +4,9 @@ import os
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "mistral")
 
-# Ollama sizes its runtime context window heuristically (often just 4096
-# tokens) rather than using the model's full supported context, unless
-# told otherwise. summarize_all_documents() concatenates the full text of
-# every logical document into one prompt, which can easily exceed 4096
-# tokens for a multi-document pharma PDF -- past that, Ollama silently
-# drops/shifts out earlier context instead of erroring, producing answers
-# based on a truncated document. Set explicitly, well above the default.
+# Ollama defaults to a small context window (often 4096 tokens) and silently
+# truncates instead of erroring past it, which can cut off multi-document
+# prompts from summarize_all_documents(). Set explicitly, well above default.
 OLLAMA_NUM_CTX = int(os.environ.get("OLLAMA_NUM_CTX", "16384"))
 
 # ---- Embedding model (shared by the retriever and LlamaIndex-based chunking) ----

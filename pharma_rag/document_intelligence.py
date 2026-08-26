@@ -71,12 +71,9 @@ def classify_document_type(text: str, max_length: int = 1500) -> str:
         return heuristic_type
 
     text_sample = text[:max_length] if len(text) > max_length else text
-    # NOTE: no manual [INST]/[/INST] markers here -- Ollama's model
-    # template already wraps every prompt in them (confirmed via
-    # `ollama show mistral --modelfile`), and [INST]/[/INST] are also
-    # configured as stop sequences for this model. Adding them here too
-    # produced a doubly-nested "[INST] [INST] ... [/INST][/INST]" prompt,
-    # which degraded classification accuracy.
+    # No manual [INST]/[/INST] here -- Ollama's mistral template already
+    # wraps prompts in them; adding our own doubly-nests the markers and
+    # hurts classification accuracy.
     prompt = f"""You are a pharmaceutical document classifier.
 Classify the page into EXACTLY ONE of these types: {VALID_DOC_TYPES}
 

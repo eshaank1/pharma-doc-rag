@@ -14,14 +14,9 @@ def generate_answer_with_sources(query: str,
             'confidence': 0.0
         }
 
-    # Group retrieved chunks by source document and de-duplicate overlapping
-    # lines before building context. The sliding-window chunker deliberately
-    # overlaps neighboring chunks for continuity, so the same table row can
-    # come back in two adjacent retrieved chunks -- sending that duplicate
-    # line to the LLM twice over-represents it relative to a fact that only
-    # appears once, which visibly biased which rows a "concise" answer chose
-    # to report (e.g. an Autoclave row present in only one chunk got dropped
-    # in favor of a Gamma Irradiation row repeated across two).
+    # De-duplicate overlapping lines per source document: the sliding-window
+    # chunker repeats rows across adjacent chunks, which over-represents them
+    # to the LLM and skews which facts a "concise" answer picks.
     groups = {}
     group_order = []
     for chunk_meta, score in retrieved_chunks:

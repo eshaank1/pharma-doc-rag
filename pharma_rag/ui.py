@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import gradio as gr
 
 from .document_store import EnhancedDocumentStore
@@ -170,248 +172,7 @@ LAB_THEME = gr.themes.Base(
     checkbox_border_color_selected_dark="#0E6B57",
 )
 
-COMPACT_CSS = """
-:root {
-    --paper: #FAFAF7;
-    --paper-2: #F1F2ED;
-    --ink: #1B2420;
-    --ink-soft: #5B6660;
-    --line: #D9DDD5;
-    --teal: #0E6B57;
-    --teal-dark: #0A4A3C;
-    --teal-tint: #EAF5F1;
-    --amber: #92621C;
-    --amber-tint: #FBF1DF;
-    --steel: #2F4B6E;
-    --steel-tint: #EAF0F7;
-}
-
-.gradio-container { max-width: 100% !important; background: var(--paper) !important; }
-#left_panel { font-size: 0.88em; }
-
-/* Belt-and-suspenders: if the visitor's browser is in dark mode,
-   Gradio scopes a `.dark` class onto the app root and reads its own
-   CSS custom properties from it. Re-pin those to the same light
-   values here so no component can silently switch palettes. */
-.dark, .gradio-container.dark {
-    --body-background-fill: var(--paper) !important;
-    --background-fill-primary: #FFFFFF !important;
-    --background-fill-secondary: var(--paper-2) !important;
-    --border-color-primary: var(--line) !important;
-    --block-background-fill: #FFFFFF !important;
-    --block-border-color: var(--line) !important;
-    --block-label-text-color: var(--ink-soft) !important;
-    --block-title-text-color: var(--ink) !important;
-    --body-text-color: var(--ink) !important;
-    --body-text-color-subdued: var(--ink-soft) !important;
-    --input-background-fill: #FFFFFF !important;
-    --input-border-color: var(--line) !important;
-    --button-secondary-background-fill: #FFFFFF !important;
-    --button-secondary-border-color: var(--line) !important;
-    --button-secondary-text-color: var(--ink) !important;
-}
-
-/* Force the type family everywhere, including inside components
-   (File dropzone, Chatbot) whose internal markup sits below the
-   selectors above and previously kept the browser's default font. */
-.gradio-container, .gradio-container * {
-    font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif !important;
-}
-.status-val, .doc-chip, .doc-meta, .stat-pill, .hero-eyebrow,
-.sources-details .sources-footer, code, pre {
-    font-family: 'IBM Plex Mono', ui-monospace, monospace !important;
-}
-
-/* -------------------- Hero / document header -------------------- */
-.hero { padding: 2px 2px 16px 2px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
-.hero-eyebrow {
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.72em; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--teal); margin-bottom: 8px;
-}
-.hero-title { font-size: 1.55em; font-weight: 650; margin: 0 0 6px 0; color: var(--ink); letter-spacing: -0.01em; }
-.hero-sub { font-size: 0.92em; color: var(--ink-soft); margin: 0; max-width: 660px; line-height: 1.5; }
-
-/* -------------------- Section labels (panel headers) -------------------- */
-#left_panel h3, #right_panel h3 {
-    font-family: 'IBM Plex Mono', monospace !important;
-    font-size: 0.72em !important;
-    letter-spacing: 0.12em !important;
-    text-transform: uppercase !important;
-    color: var(--ink-soft) !important;
-    font-weight: 600 !important;
-    border-bottom: 1px solid var(--line) !important;
-    padding-bottom: 6px !important;
-    margin: 14px 0 10px 0 !important;
-}
-
-.gr-button, button { padding: 4px 10px !important; }
-
-/* Dropzone: compact height, wide horizontal layout, readable text size.
-   Explicit background/text colors here (not just on .dark above)
-   because the File component paints its own surface regardless of
-   the light/dark class present on the root. */
-#pdf_upload, #pdf_upload * {
-    background: #FFFFFF !important;
-    color: var(--ink) !important;
-    border-color: var(--line) !important;
-}
-#pdf_upload svg { color: var(--teal) !important; fill: currentColor !important; }
-#pdf_upload { max-height: 130px !important; border-color: var(--line) !important; }
-#pdf_upload .wrap {
-    min-height: 90px !important; height: 90px !important;
-    display: flex !important; flex-direction: row !important;
-    align-items: center !important; justify-content: center !important;
-    gap: 10px !important; flex-wrap: wrap !important;
-}
-#pdf_upload .wrap > * {
-    display: flex !important; flex-direction: row !important;
-    align-items: center !important; gap: 6px !important;
-}
-#pdf_upload .wrap, #pdf_upload .wrap * {
-    font-size: 0.95em !important; line-height: 1.2 !important;
-}
-#pdf_upload .wrap svg { width: 20px !important; height: 20px !important; color: var(--teal) !important; }
-
-/* Left panel: stretch to match right column without stray gaps
-   between children (children default to flex-grow:1, which left
-   empty space inside each block before a file is uploaded). Forcing
-   flex: 0 0 auto packs everything from the top. */
-#left_panel {
-    display: flex !important; flex-direction: column !important;
-    justify-content: flex-start !important; gap: 4px !important;
-}
-#left_panel > * { flex: 0 0 auto !important; }
-
-/* Message textbox + Send button aligned in one row. */
-#ask_row { display: flex !important; align-items: center !important; }
-#ask_row > * { align-self: center !important; }
-
-/* -------------------- Status card (Certificate-of-Analysis style) -------------------- */
-.status-card {
-    position: relative;
-    background: var(--paper) !important;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 14px 16px;
-}
-.status-card--pass {
-    border-color: #BFE3D6;
-    background: linear-gradient(180deg, var(--teal-tint), var(--paper) 65%) !important;
-    padding-right: 84px;
-}
-.status-card--error { border-color: #E4C7AE; background: var(--amber-tint) !important; }
-.status-card--empty { border-style: dashed; }
-.status-empty-title { font-weight: 600; color: var(--ink); font-size: 0.92em; }
-.status-empty-sub { color: var(--ink-soft); font-size: 0.85em; margin-top: 3px; }
-
-.status-stamp {
-    position: absolute; top: 10px; right: 12px;
-    width: 60px; height: 60px; border-radius: 50%;
-    border: 2px solid var(--teal); color: var(--teal);
-    display: flex; align-items: center; justify-content: center; text-align: center;
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.6em; font-weight: 700; letter-spacing: 0.03em;
-    transform: rotate(-9deg); opacity: 0.9;
-}
-.status-stamp::after {
-    content: ""; position: absolute; inset: 4px; border: 1px solid var(--teal); border-radius: 50%;
-}
-
-.status-row {
-    display: flex; justify-content: space-between; align-items: baseline;
-    gap: 14px; padding: 4px 0; font-size: 0.85em;
-    border-bottom: 1px dashed var(--line);
-}
-.status-row:last-child { border-bottom: none; }
-.status-key {
-    color: var(--ink-soft);
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-.status-val {
-    font-family: 'IBM Plex Mono', monospace !important;
-    color: var(--ink);
-    text-align: right;
-    word-break: break-word;
-}
-.status-row--wrap { align-items: flex-start; }
-.status-row--wrap .status-val { text-align: left; }
-
-/* -------------------- Document structure list -------------------- */
-.doc-structure { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
-.doc-structure-item {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-    font-size: 0.83em; padding: 6px 8px;
-    background: var(--paper-2); border-radius: 8px; border: 1px solid var(--line);
-}
-.doc-chip {
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.68em; padding: 2px 7px;
-    border-radius: 999px; background: var(--steel-tint); color: var(--steel);
-    white-space: nowrap; text-transform: uppercase; letter-spacing: 0.03em;
-}
-.doc-meta { color: var(--ink-soft); }
-
-/* -------------------- Status bar (footer) -------------------- */
-.statusbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 6px 2px; }
-.stat-pill {
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.78em; color: var(--ink);
-    background: var(--paper-2); border: 1px solid var(--line);
-    padding: 4px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px;
-}
-.stat-pill b { color: var(--teal); font-weight: 700; }
-.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-soft); display: inline-block; }
-.dot--pass { background: var(--teal); }
-
-/* -------------------- Chip-style utility buttons -------------------- */
-.chip-btn, .chip-btn button {
-    font-family: 'IBM Plex Mono', monospace !important;
-    font-size: 0.78em !important;
-    border-radius: 999px !important;
-    letter-spacing: 0.01em;
-}
-
-/* -------------------- Collapsible sources block inside chat -------------------- */
-.sources-details {
-    margin-top: 6px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 4px 8px;
-    background: var(--paper-2);
-}
-.sources-details summary {
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--teal-dark);
-    padding: 4px 0;
-    list-style: revert;
-    font-size: 0.9em;
-}
-.sources-details summary:hover { opacity: 0.8; }
-.sources-details ul { margin: 6px 0 2px 0; padding-left: 20px; }
-.sources-details .sources-footer {
-    margin-top: 4px;
-    opacity: 0.75;
-    font-size: 0.85em;
-    font-family: 'IBM Plex Mono', monospace;
-}
-
-/* -------------------- Chatbot -------------------- */
-/* Same reasoning as #pdf_upload above: force every descendant, not
-   just the outer frame, so the empty-state canvas and message
-   bubbles can't fall back to Gradio's dark surface. */
-#chatbot, #chatbot * {
-    background: var(--paper) !important;
-    color: var(--ink) !important;
-    border-color: var(--line) !important;
-}
-#chatbot { border: 1px solid var(--line) !important; }
-#chatbot .message.user, #chatbot [data-testid="user"] {
-    background: var(--teal-tint) !important;
-}
-#chatbot .message.bot, #chatbot [data-testid="bot"] {
-    background: #FFFFFF !important;
-    border: 1px solid var(--line) !important;
-}
-"""
+COMPACT_CSS = Path(__file__).with_name("style.css").read_text()
 
 
 def create_interface():
@@ -526,11 +287,7 @@ def create_interface():
                     height=560,
                     elem_id="chatbot",
                     show_label=False,
-                    buttons=["copy", "copy_all"],  # omit "share": it only
-                    # works on a real HF Space (posts to a Spaces
-                    # Discussion thread); it has nowhere to send the
-                    # conversation when self-hosted, so the click would
-                    # silently do nothing.
+                    buttons=["copy", "copy_all"],  # omit "share"
                 )
 
                 with gr.Row(elem_id="ask_row"):
@@ -587,15 +344,10 @@ def create_interface():
 
         # Wire up all the events.
         #
-        # LOADING-BOX FIX: Gradio shows a pending overlay (spinner +
-        # "x.x/xx.xs" eta text) on every OUTPUT component of a running
-        # event. status_bar is a thin, mostly-empty row pinned to the
-        # bottom of the page, so bundling it into the same event as
-        # chatbot/status_output made that overlay render as its own
-        # floating box down there instead of staying inside the chat
-        # panel. Fix: update status_bar in a separate chained step with
-        # show_progress="hidden", so only the chatbot (or the status
-        # card, for PDF processing) shows a loading indicator.
+        # status_bar is updated in a separate .then() with
+        # show_progress="hidden" -- bundled into the main event, Gradio's
+        # loading overlay rendered as a stray floating box on this thin
+        # bottom bar instead of staying inside the chat panel.
         process_btn.click(
             fn=process_pdf_handler,
             inputs=[pdf_input],
